@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/NamesNotRich/gator/internal/database"
+	"github.com/google/uuid"
 )
 
 func handlerLogin(s *state, cmd command) error {
@@ -34,10 +34,10 @@ func handlerRegister(s *state, cmd command) error {
 	}
 
 	arg := database.CreateUserParams{
-		ID: uuid.New(),
+		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Name: cmd.Args[0],
+		Name:      cmd.Args[0],
 	}
 	user, err := s.db.CreateUser(context.Background(), arg)
 	if err != nil {
@@ -49,7 +49,12 @@ func handlerRegister(s *state, cmd command) error {
 		return fmt.Errorf("couldn't set current user: %w", err)
 	}
 
-	fmt.Printf("User <%+v> has been created\n", user)
-
+	fmt.Println("User has been created:")
+	PrintUser(user)
 	return nil
+}
+
+func PrintUser(user database.User) {
+	fmt.Printf(" * ID:      %v\n", user.ID)
+	fmt.Printf(" * Name:    %v\n", user.Name)
 }

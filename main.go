@@ -5,13 +5,13 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/lib/pq"
 	"github.com/NamesNotRich/gator/internal/config"
 	"github.com/NamesNotRich/gator/internal/database"
+	_ "github.com/lib/pq"
 )
 
 type state struct {
-	db *database.Queries
+	db  *database.Queries
 	cfg *config.Config
 }
 
@@ -28,17 +28,18 @@ func main() {
 
 	dbQueries := database.New(db)
 
-
 	appState := state{
-		db: dbQueries,
+		db:  dbQueries,
 		cfg: &cfg,
 	}
 
 	cmds := commands{
 		handlers: make(map[string]func(*state, command) error),
 	}
+
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
+	cmds.register("reset", handlerReset)
 
 	if len(os.Args) < 2 {
 		log.Fatal("2 or more arguments required")
