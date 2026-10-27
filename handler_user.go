@@ -1,15 +1,55 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/NamesNotRich/gator/internal/database"
+)
 
 func handlerLogin(s *state, cmd command) error {
 	if len(cmd.Args) != 1 {
 		return fmt.Errorf("usage: %s <name>", cmd.Name)
 	}
-	err := s.cfg.SetUser(cmd.Args[0])
+	_, err := s.db.GetUser(context.Background(), cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("user doesn't exist: %w", err)
+	}
+
+	err = s.cfg.SetUser(cmd.Args[0])
 	if err != nil {
 		return fmt.Errorf("couldn't set current user: %w", err)
 	}
+
 	fmt.Println("Username has been set!")
+
+	return nil
+}
+
+func handlerRegister(s *state, cmd command) error {
+	if len(cmd.Args) != 1 {
+		return fmt.Errorf("usage: %s <name>", cmd.Name)
+	}
+
+	arg := database.CreateUserParams{
+		ID: uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name: cmd.Args[0],
+	}
+	user, err := s.db.CreateUser(context.Background(), arg)
+	if err != nil {
+		return fmt.Errorf("couldn't create user: %w", err)
+	}
+
+	err = s.cfg.SetUser(cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("couldn't set current user: %w", err)
+	}
+
+	fmt.Printf("User <%+v> has been created\n", user)
+
 	return nil
 }
