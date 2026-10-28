@@ -9,14 +9,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) != 2 {
 		return fmt.Errorf("usage: %s <name> <url>", cmd.Name)
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("user doesn't exist: %w", err)
 	}
 
 	arg := database.CreateFeedParams{
@@ -62,58 +57,6 @@ func handlerListFeeds(s *state, cmd command) error {
 		fmt.Printf(" %+v\n", feed)
 	}
 
-	return nil
-}
-
-func handlerFollow(s *state, cmd command) error {
-	if len(cmd.Args) != 1 {
-		return fmt.Errorf("usage: %s <url>", cmd.Name)
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("user doesn't exist: %w", err)
-	}
-
-	feed, err := s.db.GetFeedByURL(context.Background(), cmd.Args[0])
-	if err != nil {
-		return fmt.Errorf("feed doesn't exist: %w", err)
-	}
-
-	arg := database.CreateFeedFollowParams{
-		ID:        uuid.New(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		UserID:    user.ID,
-		FeedID:    feed.ID,
-	}
-
-	feedFollow, err := s.db.CreateFeedFollow(context.Background(), arg)
-	if err != nil {
-		return fmt.Errorf("couldn't follow feed: %w", err)
-	}
-
-	fmt.Println("Feed followed successfuly!")
-	fmt.Printf("* Feed Name: %v\n", feedFollow.FeedName)
-	fmt.Printf("* Current User: %v\n", feedFollow.UserName)
-	return nil
-}
-
-func handlerListFeedFollows(s *state, cmd command) error {
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("user doesn't exist: %w", err)
-	}
-
-	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
-	if err != nil {
-		return fmt.Errorf("couldn't get feed follows: %w", err)
-	}
-
-	fmt.Printf("%s is following:\n", user.Name)
-	for _, feedFollow := range feedFollows {
-		fmt.Printf("- %s\n", feedFollow.FeedName)
-	}
 	return nil
 }
 
