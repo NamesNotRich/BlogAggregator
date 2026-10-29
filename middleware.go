@@ -14,6 +14,6 @@ func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) 
 			return fmt.Errorf("user doesn't exist: %w", err)
 		}
 
-		 return handler(s, cmd, user)
+		return handler(s, cmd, user)
 	}
 }
